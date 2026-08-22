@@ -1,0 +1,36 @@
+# Environment & Secret files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# OS Generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & temporary files
+*.log
+scratch/
