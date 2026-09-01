@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-supabase
-python-dotenv
-pydantic
-python-multipart
-httpx
