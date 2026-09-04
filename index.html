@@ -1,0 +1,3116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="MediCare Hospital Management System - Modern Healthcare Platform for Patients and Administrators">
+  <title>MediCare Hospital Management System</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <!-- Chart.js CDN for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Supabase JS Client v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+
+  <!-- EmailJS Browser SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-body">
+        <div class="confirm-dialog">
+          <div id="confirm-icon" class="icon warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h3 id="confirm-title">Confirm Action</h3>
+          <p id="confirm-message" class="text-muted">Are you sure you want to proceed?</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="confirm-cancel-btn" class="btn btn-secondary">Cancel</button>
+        <button id="confirm-action-btn" class="btn btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Invoice Modal -->
+  <div id="invoice-modal" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-invoice-dollar text-primary"></i> Hospital Invoice</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('invoice-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="invoice-modal-body">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="App.UI.closeModal('invoice-modal')">Close</button>
+        <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print
+          Invoice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Prescription Modal -->
+  <div id="prescription-modal" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-prescription text-primary"></i> Medical Prescription</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('prescription-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="prescription-modal-body">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="App.UI.closeModal('prescription-modal')">Close</button>
+        <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print
+          Prescription</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Details Modal -->
+  <div id="doctor-details-modal" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>Doctor Information</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('doctor-details-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="doctor-details-body">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="App.UI.closeModal('doctor-details-modal')">Close</button>
+        <button id="book-with-doc-btn" class="btn btn-primary"><i class="fa-solid fa-calendar-check"></i> Book
+          Appointment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. PUBLIC LANDING PAGE VIEW -->
+  <!-- ========================================================================= -->
+  <div id="view-landing" class="landing-page">
+
+    <!-- Navbar -->
+    <nav class="landing-nav" id="landing-navbar">
+      <div class="landing-logo">
+        <div class="logo-icon"><i class="fa-solid fa-hospital"></i></div>
+        <h1>MediCare</h1>
+      </div>
+      <div class="landing-nav-links">
+        <a href="#hero">Home</a>
+        <a href="#services">Services</a>
+        <a href="#doctors">Specialists</a>
+        <a href="#emergency">Emergency</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="landing-nav-actions">
+        <button class="topbar-btn" id="landing-theme-toggle" onclick="App.UI.toggleTheme()" title="Switch Light/Dark Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="App.Router.navigate('patient-login')">
+          <i class="fa-solid fa-user"></i> Patient Login
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="App.Router.navigate('patient-register')">
+          <i class="fa-solid fa-user-plus"></i> Register
+        </button>
+        <button class="btn btn-outline-primary btn-sm" onclick="App.Router.navigate('admin-login')"
+          title="Admin Portal">
+          <i class="fa-solid fa-shield-halved"></i> Staff / Admin
+        </button>
+      </div>
+      <button class="landing-mobile-toggle" id="landing-menu-btn" aria-label="Open Navigation">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section" id="hero">
+      <div class="hero-content">
+        <div class="hero-text animate-fade-in-up">
+          <div class="badge badge-primary mb-3">
+            <i class="fa-solid fa-award"></i> Accredited Healthcare Facility
+          </div>
+          <h1>World-Class Healthcare, <span>Right When You Need It.</span></h1>
+          <p>
+            Welcome to MediCare General Hospital. Book specialist appointments online, manage electronic health records,
+            view lab reports, and experience compassionate medical excellence 24/7.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" onclick="App.Router.navigate('patient-register')">
+              <i class="fa-solid fa-calendar-plus"></i> Book Consultation
+            </button>
+            <button class="btn btn-secondary btn-lg"
+              onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">
+              <i class="fa-solid fa-stethoscope"></i> Our Departments
+            </button>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="number">10+</div>
+              <div class="label">Specialized Depts</div>
+            </div>
+            <div class="hero-stat">
+              <div class="number">50+</div>
+              <div class="label">Expert Doctors</div>
+            </div>
+            <div class="hero-stat">
+              <div class="number">24/7</div>
+              <div class="label">Emergency Care</div>
+            </div>
+            <div class="hero-stat">
+              <div class="number">99.8%</div>
+              <div class="label">Patient Satisfaction</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-image-container">
+            <i class="fa-solid fa-heart-pulse hero-icon"></i>
+
+            <div class="hero-float-card">
+              <div class="card-icon green"><i class="fa-solid fa-user-doctor"></i></div>
+              <div class="card-text">
+                <div class="title">Verified Doctors</div>
+                <div class="subtitle">Certified Consultants</div>
+              </div>
+            </div>
+
+            <div class="hero-float-card">
+              <div class="card-icon blue"><i class="fa-solid fa-microscope"></i></div>
+              <div class="card-text">
+                <div class="title">Fast Diagnostic Lab</div>
+                <div class="subtitle">Digital Reports Online</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Services Section -->
+    <section class="landing-section" id="services">
+      <div class="section-header">
+        <span class="badge">Clinical Excellence</span>
+        <h2>Our Medical Departments</h2>
+        <p>Comprehensive healthcare disciplines staffed by seasoned board-certified medical specialists.</p>
+      </div>
+      <div class="services-grid" id="landing-departments-grid">
+        <!-- Injected via JavaScript -->
+        <div class="service-card">
+          <div class="icon"><i class="fa-solid fa-heart-pulse"></i></div>
+          <h3>Cardiology</h3>
+          <p>Comprehensive heart, valve, and vascular diagnosis and advanced coronary interventions.</p>
+        </div>
+        <div class="service-card">
+          <div class="icon"><i class="fa-solid fa-brain"></i></div>
+          <h3>Neurology</h3>
+          <p>Diagnosis & treatment for nervous system, epilepsy, stroke, and neuromuscular conditions.</p>
+        </div>
+        <div class="service-card">
+          <div class="icon"><i class="fa-solid fa-bone"></i></div>
+          <h3>Orthopedics</h3>
+          <p>Joint replacements, fracture trauma care, spine treatments, and sports injury recovery.</p>
+        </div>
+        <div class="service-card">
+          <div class="icon"><i class="fa-solid fa-baby"></i></div>
+          <h3>Pediatrics</h3>
+          <p>Dedicated clinical care for neonates, infants, young children, and growing adolescents.</p>
+        </div>
+        <div class="service-card">
+          <div class="icon"><i class="fa-solid fa-hand-dots"></i></div>
+          <h3>Dermatology</h3>
+          <p>Treatment of complex skin disorders, clinical allergies, and restorative dermatologic therapy.</p>
+        </div>
+        <div class="service-card">
+          <div class="icon"><i class="fa-solid fa-hospital-user"></i></div>
+          <h3>General Medicine</h3>
+          <p>Preventative wellness, chronic disease management, diabetes, and primary diagnosis.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Emergency Hotline Banner -->
+    <section class="landing-section" id="emergency" style="padding-top:0;">
+      <div
+        style="background: linear-gradient(135deg, #EF476F, #DC2626); color:white; border-radius: var(--radius-xl); padding: 3rem 2rem; display: flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:2rem; box-shadow: var(--shadow-lg);">
+        <div>
+          <span
+            style="background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-size:0.85rem; font-weight:600; text-transform:uppercase;">
+            <i class="fa-solid fa-truck-medical"></i> 24/7 Emergency Triage
+          </span>
+          <h2 style="color:white; font-size:2rem; margin:0.75rem 0 0.5rem;">Immediate Emergency Care</h2>
+          <p style="opacity:0.9; max-width:600px;">Our emergency trauma center is fully prepared with ICU beds, rapid
+            diagnostic imaging, and on-call trauma surgeons.</p>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.85rem; opacity:0.85; text-transform:uppercase; font-weight:600;">Emergency Hotline
+          </div>
+          <a href="tel:+15559110000"
+            style="color:white; font-size:2.2rem; font-weight:800; text-decoration:none; display:block; margin:0.25rem 0 1rem;">
+            <i class="fa-solid fa-phone-volume"></i> +1 (555) 911-0000
+          </a>
+          <button class="btn btn-secondary" onclick="App.Router.navigate('patient-register')">
+            <i class="fa-solid fa-ambulance"></i> Request Admission Help
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Doctors -->
+    <section class="landing-section" id="doctors">
+      <div class="section-header">
+        <span class="badge">Our Medical Team</span>
+        <h2>Consult With Specialists</h2>
+        <p>Meet our experienced physicians, surgeons, and specialists dedicated to patient-first care.</p>
+      </div>
+      <div class="doctors-grid" id="landing-doctors-grid">
+        <!-- Injected via JavaScript from Supabase -->
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="landing-section" id="about">
+      <div class="contact-grid">
+        <div>
+          <span class="badge">About MediCare</span>
+          <h2 style="font-size:2.2rem; margin:1rem 0;">Pioneering Healthcare Innovation for Over 25 Years</h2>
+          <p class="text-muted" style="margin-bottom:1.5rem; line-height:1.8;">
+            MediCare Hospital is committed to delivering exceptional patient care with cutting-edge medical technology
+            and empathetic service. Our integrated electronic management platform empowers patients with real-time
+            access to their medical records, lab reports, and seamless digital consultations.
+          </p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+            <div
+              style="background:var(--surface); border:1px solid var(--border); padding:1.25rem; border-radius:var(--radius-lg);">
+              <i class="fa-solid fa-microchip text-primary" style="font-size:1.5rem; margin-bottom:0.5rem;"></i>
+              <h4 style="font-size:1rem; margin-bottom:0.25rem;">Smart Digital Hospital</h4>
+              <p class="text-muted text-xs">Seamless digital prescriptions and real-time medical logs.</p>
+            </div>
+            <div
+              style="background:var(--surface); border:1px solid var(--border); padding:1.25rem; border-radius:var(--radius-lg);">
+              <i class="fa-solid fa-shield-heart text-primary" style="font-size:1.5rem; margin-bottom:0.5rem;"></i>
+              <h4 style="font-size:1rem; margin-bottom:0.25rem;">Safe & Confidential</h4>
+              <p class="text-muted text-xs">Strict Row-Level Security ensuring patient privacy.</p>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="hero-image-container" style="max-width:100%; height:360px;">
+            <div style="text-align:center; padding:2rem;">
+              <i class="fa-solid fa-hospital-user text-primary"
+                style="font-size:4rem; margin-bottom:1rem; opacity:0.8;"></i>
+              <h3>Patient-Centric Healthcare</h3>
+              <p class="text-muted text-sm mt-2">Connecting patients, medical staff, diagnostic labs, and pharmacies in
+                one unified portal.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="landing-section" id="contact">
+      <div class="section-header">
+        <span class="badge">Get in Touch</span>
+        <h2>Contact & Help Desk</h2>
+        <p>Have inquiries or need help booking an appointment? Reach out to our 24/7 help desk.</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-info-cards">
+          <div class="contact-info-card">
+            <div class="icon"><i class="fa-solid fa-location-dot"></i></div>
+            <div>
+              <h4>Hospital Location</h4>
+              <p>123 Healthcare , Medical District Jamshedpur, 831013</p>
+            </div>
+          </div>
+          <div class="contact-info-card">
+            <div class="icon"><i class="fa-solid fa-phone"></i></div>
+            <div>
+              <h4>Telephone Support</h4>
+              <p>General: +91 9999999999 | Emergency: +91 9999999999 </p>
+            </div>
+          </div>
+          <div class="contact-info-card">
+            <div class="icon"><i class="fa-solid fa-envelope"></i></div>
+            <div>
+              <h4>Email Address</h4>
+              <p>adiityakumar9523340408@gmail.com</p>
+            </div>
+          </div>
+          <div class="contact-info-card">
+            <div class="icon"><i class="fa-solid fa-clock"></i></div>
+            <div>
+              <h4>Working Hours</h4>
+              <p>OPD: Mon–Sat 8:00 AM – 8:00 PM | Emergency & ICU: 24/7</p>
+            </div>
+          </div>
+        </div>
+        <div class="contact-form">
+          <h3><i class="fa-solid fa-envelope-open-text text-primary"></i> Send a Direct Inquiry</h3>
+          <p class="text-sm text-muted mb-3">Questions about admissions, treatments, or billing? Send us a direct
+            message.</p>
+          <form id="landing-inquiry-form" onsubmit="App.Landing.handleInquiry(event)">
+            <div class="form-group">
+              <label for="inquiry-name">Your Full Name <span class="required">*</span></label>
+              <input type="text" id="inquiry-name" class="form-control" placeholder="Name" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="inquiry-email">Email Address <span class="required">*</span></label>
+                <input type="email" id="inquiry-email" class="form-control" placeholder="name@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="inquiry-phone">Phone Number</label>
+                <input type="tel" id="inquiry-phone" class="form-control" placeholder="+91 9999999999">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inquiry-dept">Department / Subject</label>
+              <select id="inquiry-dept" class="form-control">
+                <option value="General Inquiries">General Inquiries</option>
+                <option value="Appointments & Scheduling">Appointments & Scheduling</option>
+                <option value="Cardiology Department">Cardiology Department</option>
+                <option value="Neurology Department">Neurology Department</option>
+                <option value="Orthopedics & Surgery">Orthopedics & Surgery</option>
+                <option value="Billing & Insurance">Billing & Insurance Queries</option>
+                <option value="Diagnostic Lab Reports">Diagnostic Lab Inquiries</option>
+                <option value="Emergency Care">Emergency Care</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inquiry-message">Your Message <span class="required">*</span></label>
+              <textarea id="inquiry-message" class="form-control"
+                placeholder="Describe your question, concern or required assistance..." rows="4" required></textarea>
+            </div>
+            <button type="submit" id="btn-inquiry-submit" class="btn btn-primary w-full">
+              <i class="fa-solid fa-paper-plane"></i> Send Direct Inquiry
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="landing-logo">
+            <div class="logo-icon"><i class="fa-solid fa-hospital"></i></div>
+            <h1 style="color:white;">MediCare</h1>
+          </div>
+          <p>
+            MediCare General Hospital delivers state-of-the-art medical diagnosis, surgery, trauma triage, inpatient
+            facilities, and digital patient record portals.
+          </p>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Navigation</h4>
+          <a href="#hero">Home</a>
+          <a href="#services">Departments</a>
+          <a href="#doctors">Physicians</a>
+          <a href="#emergency">Emergency</a>
+        </div>
+        <div class="footer-links">
+          <h4>Patient Portal</h4>
+          <a href="javascript:void(0)" onclick="App.Router.navigate('patient-login')">Patient Sign In</a>
+          <a href="javascript:void(0)" onclick="App.Router.navigate('patient-register')">Register Account</a>
+          <a href="javascript:void(0)" onclick="App.Router.navigate('forgot-password')">Forgot Password</a>
+        </div>
+        <div class="footer-links">
+          <h4>Staff & Admin</h4>
+          <a href="javascript:void(0)" onclick="App.Router.navigate('admin-login')">Admin Portal</a>
+          <a href="#contact">Hospital Directory</a>
+          <a href="javascript:void(0)" onclick="App.UI.toggleTheme()">Toggle Theme</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 MediCare Hospital Management System. All Rights Reserved. Built with Supabase & Python.
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. AUTHENTICATION PAGES (PATIENT LOGIN, REGISTER, ADMIN LOGIN, FORGOT PW) -->
+  <!-- ========================================================================= -->
+
+  <!-- Patient Login -->
+  <div id="view-patient-login" class="auth-page hidden">
+    <div class="auth-container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <a href="javascript:void(0)" class="auth-back" onclick="App.Router.navigate('landing')" style="margin-bottom:0;">
+          <i class="fa-solid fa-arrow-left"></i> Back to Hospital Home
+        </a>
+        <button class="topbar-btn" onclick="App.UI.toggleTheme()" title="Switch Light/Dark Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
+      </div>
+      <div class="auth-header">
+        <div class="auth-logo"><i class="fa-solid fa-user-lock"></i></div>
+        <h2>Patient Portal Login</h2>
+        <p>Access your medical records, prescriptions and appointments</p>
+      </div>
+
+      <!-- Continue with Google Button -->
+      <button type="button" id="btn-patient-google-login" class="btn btn-google w-full"
+        onclick="App.Auth.handleGoogleLogin()">
+        <svg class="google-icon" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            fill="#4285F4" />
+          <path
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            fill="#34A853" />
+          <path
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+            fill="#FBBC05" />
+          <path
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+            fill="#EA4335" />
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div class="auth-divider"><span>or sign in with email</span></div>
+
+      <form id="form-patient-login" class="auth-form" onsubmit="App.Auth.handlePatientLogin(event)">
+        <div class="form-group">
+          <label for="login-patient-email">Email Address <span class="required">*</span></label>
+          <div style="position:relative;">
+            <input type="email" id="login-patient-email" class="form-control" placeholder="name@example.com" required
+              autocomplete="username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="login-patient-pass">Password <span class="required">*</span></label>
+          <div class="password-wrapper">
+            <input type="password" id="login-patient-pass" class="form-control" placeholder="••••••••" required
+              autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+          </div>
+        </div>
+        <div class="form-footer">
+          <label class="checkbox-group">
+            <input type="checkbox" id="patient-remember-me">
+            <span>Remember me</span>
+          </label>
+          <a href="javascript:void(0)" onclick="App.Router.navigate('forgot-password')">Forgot password?</a>
+        </div>
+        <button type="submit" id="btn-patient-login-submit" class="btn btn-primary">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In to Dashboard
+        </button>
+      </form>
+      <div class="auth-divider"><span>New to MediCare?</span></div>
+      <div class="auth-footer">
+        Don't have an account? <a href="javascript:void(0)" onclick="App.Router.navigate('patient-register')">Register
+          Now</a>
+      </div>
+      <div class="text-center mt-3">
+        <a href="javascript:void(0)" onclick="App.Router.navigate('admin-login')" class="text-sm text-muted">
+          <i class="fa-solid fa-shield-halved"></i> Hospital Staff / Admin Access
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Registration -->
+  <div id="view-patient-register" class="auth-page hidden">
+    <div class="auth-container" style="max-width:540px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <a href="javascript:void(0)" class="auth-back" onclick="App.Router.navigate('landing')" style="margin-bottom:0;">
+          <i class="fa-solid fa-arrow-left"></i> Back to Hospital Home
+        </a>
+        <button class="topbar-btn" onclick="App.UI.toggleTheme()" title="Switch Light/Dark Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
+      </div>
+      <div class="auth-header">
+        <div class="auth-logo"><i class="fa-solid fa-id-card"></i></div>
+        <h2>Patient Registration</h2>
+        <p>Create your personal healthcare account</p>
+      </div>
+
+      <!-- Continue with Google Button -->
+      <button type="button" id="btn-patient-google-reg" class="btn btn-google w-full"
+        onclick="App.Auth.handleGoogleLogin()">
+        <svg class="google-icon" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            fill="#4285F4" />
+          <path
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            fill="#34A853" />
+          <path
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+            fill="#FBBC05" />
+          <path
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+            fill="#EA4335" />
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div class="auth-divider"><span>or register with email</span></div>
+
+      <form id="form-patient-register" class="auth-form" onsubmit="App.Auth.handlePatientRegister(event)">
+        <div class="form-group">
+          <label for="reg-name">Full Name <span class="required">*</span></label>
+          <input type="text" id="reg-name" class="form-control" placeholder="Johnathan Doe" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-email">Email Address <span class="required">*</span></label>
+            <input type="email" id="reg-email" class="form-control" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Phone Number <span class="required">*</span></label>
+            <input type="tel" id="reg-phone" class="form-control" placeholder="+1 (555) 000-0000" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-dob">Date of Birth <span class="required">*</span></label>
+            <input type="date" id="reg-dob" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-gender">Gender <span class="required">*</span></label>
+            <select id="reg-gender" class="form-control" required>
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-blood">Blood Group</label>
+            <select id="reg-blood" class="form-control">
+              <option value="">Select Blood Type</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reg-address">Address / City</label>
+            <input type="text" id="reg-address" class="form-control" placeholder="New York, NY">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-pass">Password <span class="required">*</span></label>
+            <div class="password-wrapper">
+              <input type="password" id="reg-pass" class="form-control" placeholder="Min 6 characters" minlength="6"
+                required>
+              <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reg-pass-confirm">Confirm Password <span class="required">*</span></label>
+            <div class="password-wrapper">
+              <input type="password" id="reg-pass-confirm" class="form-control" placeholder="Repeat password"
+                minlength="6" required>
+              <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+            </div>
+          </div>
+        </div>
+        <button type="submit" id="btn-patient-reg-submit" class="btn btn-primary mt-2">
+          <i class="fa-solid fa-user-check"></i> Complete Registration
+        </button>
+      </form>
+      <div class="auth-footer">
+        Already registered? <a href="javascript:void(0)" onclick="App.Router.navigate('patient-login')">Sign In</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login -->
+  <div id="view-admin-login" class="auth-page hidden">
+    <div class="auth-container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <a href="javascript:void(0)" class="auth-back" onclick="App.Router.navigate('landing')" style="margin-bottom:0;">
+          <i class="fa-solid fa-arrow-left"></i> Back to Hospital Home
+        </a>
+        <button class="topbar-btn" onclick="App.UI.toggleTheme()" title="Switch Light/Dark Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
+      </div>
+      <div class="auth-header">
+        <div class="auth-logo" style="background: linear-gradient(135deg, #023E8A, #0077B6);"><i
+            class="fa-solid fa-shield-halved"></i></div>
+        <h2>Hospital Admin Portal</h2>
+        <p>Authorized medical administration & management</p>
+      </div>
+      <form id="form-admin-login" class="auth-form" onsubmit="App.Auth.handleAdminLogin(event)">
+        <div class="form-group">
+          <label for="login-admin-email">Admin Email / Username <span class="required">*</span></label>
+          <input type="email" id="login-admin-email" class="form-control" placeholder="admin@medicare.com"
+            required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-admin-pass">Security Password <span class="required">*</span></label>
+          <div class="password-wrapper">
+            <input type="password" id="login-admin-pass" class="form-control" placeholder="••••••••"
+              required autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+          </div>
+        </div>
+        <button type="submit" id="btn-admin-login-submit" class="btn btn-primary"
+          style="background:linear-gradient(135deg, #023E8A, #0077B6);">
+          <i class="fa-solid fa-lock-open"></i> Login as Administrator
+        </button>
+      </form>
+      <div class="auth-footer">
+        <p class="text-xs text-muted mt-3">Protected healthcare environment. All admin actions are audit-logged.</p>
+        <div class="mt-3">
+          <a href="javascript:void(0)" onclick="App.Router.navigate('patient-login')">Switch to Patient Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password -->
+  <div id="view-forgot-password" class="auth-page hidden">
+    <div class="auth-container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <a href="javascript:void(0)" class="auth-back" onclick="App.Router.navigate('patient-login')" style="margin-bottom:0;">
+          <i class="fa-solid fa-arrow-left"></i> Back to Sign In
+        </a>
+        <button class="topbar-btn" onclick="App.UI.toggleTheme()" title="Switch Light/Dark Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
+      </div>
+      <div class="auth-header">
+        <div class="auth-logo"><i class="fa-solid fa-key"></i></div>
+        <h2>Reset Password</h2>
+        <p>Enter your email to receive recovery instructions</p>
+      </div>
+      <form id="form-forgot-pass" class="auth-form" onsubmit="App.Auth.handleForgotPassword(event)">
+        <div class="form-group">
+          <label for="forgot-email">Registered Email <span class="required">*</span></label>
+          <input type="email" id="forgot-email" class="form-control" placeholder="patient@example.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-paper-plane"></i> Send Reset Link
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. DASHBOARD MAIN APP SHELL (PATIENT & ADMIN SHARED LAYOUT)               -->
+  <!-- ========================================================================= -->
+  <div id="view-app-layout" class="app-layout hidden">
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="App.UI.toggleSidebar()"></div>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside id="app-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo"><i class="fa-solid fa-hospital"></i></div>
+        <div class="sidebar-brand">MediCare HMS</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- PATIENT MENU ITEMS -->
+        <div id="sidebar-patient-menu">
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Patient Portal</div>
+            <button class="sidebar-item active" data-target="patient-dashboard"
+              onclick="App.Router.switchSection('patient-dashboard')">
+              <i class="fa-solid fa-chart-pie"></i> <span>Overview</span>
+            </button>
+            <button class="sidebar-item" data-target="patient-book" onclick="App.Router.switchSection('patient-book')">
+              <i class="fa-solid fa-calendar-plus"></i> <span>Book Appointment</span>
+            </button>
+            <button class="sidebar-item" data-target="patient-appointments"
+              onclick="App.Router.switchSection('patient-appointments')">
+              <i class="fa-solid fa-calendar-check"></i> <span>My Appointments</span>
+            </button>
+            <button class="sidebar-item" data-target="patient-doctors"
+              onclick="App.Router.switchSection('patient-doctors')">
+              <i class="fa-solid fa-user-doctor"></i> <span>Doctors Directory</span>
+            </button>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Medical Information</div>
+            <button class="sidebar-item" data-target="patient-records"
+              onclick="App.Router.switchSection('patient-records')">
+              <i class="fa-solid fa-file-medical"></i> <span>Medical Records</span>
+            </button>
+            <button class="sidebar-item" data-target="patient-prescriptions"
+              onclick="App.Router.switchSection('patient-prescriptions')">
+              <i class="fa-solid fa-prescription-bottle-medical"></i> <span>Prescriptions</span>
+            </button>
+            <button class="sidebar-item" data-target="patient-lab-reports"
+              onclick="App.Router.switchSection('patient-lab-reports')">
+              <i class="fa-solid fa-microscope"></i> <span>Lab Reports</span>
+            </button>
+            <button class="sidebar-item" data-target="patient-billing"
+              onclick="App.Router.switchSection('patient-billing')">
+              <i class="fa-solid fa-file-invoice-dollar"></i> <span>Bills & Invoices</span>
+            </button>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Account</div>
+            <button class="sidebar-item" data-target="patient-profile"
+              onclick="App.Router.switchSection('patient-profile')">
+              <i class="fa-solid fa-user-gear"></i> <span>Profile & Settings</span>
+            </button>
+            <button class="sidebar-item" data-target="patient-notifications"
+              onclick="App.Router.switchSection('patient-notifications')">
+              <i class="fa-solid fa-bell"></i> <span>Notifications</span>
+              <span id="sidebar-patient-notif-badge" class="badge-count hidden">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ADMIN MENU ITEMS -->
+        <div id="sidebar-admin-menu" class="hidden">
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Executive Control</div>
+            <button class="sidebar-item active" data-target="admin-dashboard"
+              onclick="App.Router.switchSection('admin-dashboard')">
+              <i class="fa-solid fa-chart-line"></i> <span>Analytics & Stats</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-emergency"
+              onclick="App.Router.switchSection('admin-emergency')">
+              <i class="fa-solid fa-truck-medical" style="color:#EF476F;"></i> <span>Emergency Admissions</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-appointments"
+              onclick="App.Router.switchSection('admin-appointments')">
+              <i class="fa-solid fa-calendar-check"></i> <span>Appointments Master</span>
+            </button>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Personnel & Access Control</div>
+            <button class="sidebar-item" data-target="admin-admins" onclick="App.Router.switchSection('admin-admins')">
+              <i class="fa-solid fa-user-shield"></i> <span>Admin Management</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-doctors"
+              onclick="App.Router.switchSection('admin-doctors')">
+              <i class="fa-solid fa-user-doctor"></i> <span>Doctors & Specialists</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-patients"
+              onclick="App.Router.switchSection('admin-patients')">
+              <i class="fa-solid fa-users"></i> <span>Patient Users</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-departments"
+              onclick="App.Router.switchSection('admin-departments')">
+              <i class="fa-solid fa-building-user"></i> <span>Departments</span>
+            </button>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Clinical Management</div>
+            <button class="sidebar-item" data-target="admin-medical-records"
+              onclick="App.Router.switchSection('admin-medical-records')">
+              <i class="fa-solid fa-file-waveform"></i> <span>Medical Records</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-prescriptions"
+              onclick="App.Router.switchSection('admin-prescriptions')">
+              <i class="fa-solid fa-prescription"></i> <span>Prescription Records</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-lab-reports"
+              onclick="App.Router.switchSection('admin-lab-reports')">
+              <i class="fa-solid fa-flask-vial"></i> <span>Diagnostic Lab</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-medicines"
+              onclick="App.Router.switchSection('admin-medicines')">
+              <i class="fa-solid fa-pills"></i> <span>Pharmacy & Stock</span>
+            </button>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Operations & Finance</div>
+            <button class="sidebar-item" data-target="admin-rooms" onclick="App.Router.switchSection('admin-rooms')">
+              <i class="fa-solid fa-bed"></i> <span>Rooms & Beds</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-billing"
+              onclick="App.Router.switchSection('admin-billing')">
+              <i class="fa-solid fa-cash-register"></i> <span>Billing & Revenue</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-notifications"
+              onclick="App.Router.switchSection('admin-notifications')">
+              <i class="fa-solid fa-bullhorn"></i> <span>Alert Broadcasts</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-activity-logs"
+              onclick="App.Router.switchSection('admin-activity-logs')">
+              <i class="fa-solid fa-clipboard-list"></i> <span>Audit Logs</span>
+            </button>
+            <button class="sidebar-item" data-target="admin-settings"
+              onclick="App.Router.switchSection('admin-settings')">
+              <i class="fa-solid fa-gears"></i> <span>Hospital Settings</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Sidebar User Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-user" onclick="App.Auth.logout()">
+          <div class="sidebar-avatar" id="sidebar-user-avatar">U</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="sidebar-user-name">Loading...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role">Role</div>
+          </div>
+          <i class="fa-solid fa-arrow-right-from-bracket" style="margin-left:auto; opacity:0.6;" title="Sign Out"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+    <main class="main-content">
+
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="topbar-toggle" onclick="App.UI.toggleSidebar()" aria-label="Toggle Navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="breadcrumb">
+            <a href="javascript:void(0)" id="topbar-breadcrumb-role">MediCare</a>
+            <span class="separator">/</span>
+            <span class="current" id="topbar-breadcrumb-title">Dashboard</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Theme Toggle -->
+          <button class="topbar-btn" onclick="App.UI.toggleTheme()" title="Switch Light/Dark Theme"
+            aria-label="Toggle Theme">
+            <i class="fa-solid fa-moon" id="topbar-theme-icon"></i>
+          </button>
+
+          <!-- Notifications Bell & Dropdown -->
+          <div style="position:relative;">
+            <button class="topbar-btn" id="topbar-notif-btn" onclick="App.UI.toggleNotificationDropdown()"
+              title="Notifications" aria-label="Notifications">
+              <i class="fa-solid fa-bell"></i>
+              <span id="topbar-notif-badge" class="badge-dot hidden"></span>
+            </button>
+            <div id="topbar-notif-dropdown" class="notification-dropdown">
+              <div class="dropdown-header">
+                <h4>Notifications</h4>
+                <a href="javascript:void(0)" class="text-xs text-primary"
+                  onclick="App.Notifications.markAllAsRead()">Mark all as read</a>
+              </div>
+              <div class="dropdown-body" id="topbar-notif-list">
+                <div class="p-3 text-center text-muted text-sm">No new notifications</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Profile Dropdown -->
+          <div style="position:relative;">
+            <div class="topbar-profile" onclick="App.UI.toggleProfileDropdown()">
+              <div class="avatar" id="topbar-user-avatar">U</div>
+              <span class="name" id="topbar-user-name">User</span>
+              <i class="fa-solid fa-chevron-down text-xs text-muted"></i>
+            </div>
+            <div id="topbar-profile-dropdown" class="profile-dropdown">
+              <button class="profile-dropdown-item" onclick="App.Router.goToProfile()">
+                <i class="fa-solid fa-user"></i> My Profile
+              </button>
+              <button class="profile-dropdown-item" onclick="App.UI.toggleTheme()">
+                <i class="fa-solid fa-circle-half-stroke"></i> Toggle Theme
+              </button>
+              <div class="profile-dropdown-divider"></div>
+              <button class="profile-dropdown-item danger" onclick="App.Auth.logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- =================================================================== -->
+      <!-- PAGE SECTIONS (SWITCHED VIA JAVASCRIPT)                             -->
+      <!-- =================================================================== -->
+      <div class="page-content">
+
+        <!-- ================= PATIENT SECTIONS ================= -->
+
+        <!-- Section: Patient Dashboard Overview -->
+        <section id="sec-patient-dashboard" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1 id="patient-welcome-heading">Welcome Back!</h1>
+              <p>Here is a summary of your recent health activities and appointments.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.Router.switchSection('patient-book')">
+                <i class="fa-solid fa-calendar-plus"></i> Book Appointment
+              </button>
+            </div>
+          </div>
+
+          <!-- Patient Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-info">
+                <h4>Upcoming Visits</h4>
+                <div class="value" id="p-stat-upcoming">0</div>
+                <div class="change positive"><i class="fa-solid fa-check"></i> Next scheduled visit</div>
+              </div>
+              <div class="stat-icon blue"><i class="fa-solid fa-calendar-check"></i></div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-info">
+                <h4>Total Appointments</h4>
+                <div class="value" id="p-stat-total-appts">0</div>
+                <div class="change"><i class="fa-solid fa-timeline"></i> Lifetime history</div>
+              </div>
+              <div class="stat-icon green"><i class="fa-solid fa-stethoscope"></i></div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-info">
+                <h4>Prescriptions</h4>
+                <div class="value" id="p-stat-prescriptions">0</div>
+                <div class="change"><i class="fa-solid fa-pills"></i> Active regimens</div>
+              </div>
+              <div class="stat-icon purple"><i class="fa-solid fa-prescription-bottle-medical"></i></div>
+            </div>
+            <div class="stat-card cyan">
+              <div class="stat-info">
+                <h4>Lab Reports</h4>
+                <div class="value" id="p-stat-reports">0</div>
+                <div class="change positive"><i class="fa-solid fa-flask"></i> Digital test results</div>
+              </div>
+              <div class="stat-icon cyan"><i class="fa-solid fa-microscope"></i></div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-info">
+                <h4>Pending Invoices</h4>
+                <div class="value" id="p-stat-bills">0</div>
+                <div class="change"><i class="fa-solid fa-receipt"></i> Unpaid bills</div>
+              </div>
+              <div class="stat-icon orange"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <h4 class="mb-3">Quick Actions</h4>
+          <div class="quick-actions">
+            <button class="quick-action-btn" onclick="App.Router.switchSection('patient-book')">
+              <div class="icon"><i class="fa-solid fa-calendar-plus"></i></div>
+              <span>Book Doctor</span>
+            </button>
+            <button class="quick-action-btn" onclick="App.Router.switchSection('patient-doctors')">
+              <div class="icon"><i class="fa-solid fa-user-doctor"></i></div>
+              <span>Find Specialists</span>
+            </button>
+            <button class="quick-action-btn" onclick="App.Router.switchSection('patient-records')">
+              <div class="icon"><i class="fa-solid fa-file-medical"></i></div>
+              <span>Medical Records</span>
+            </button>
+            <button class="quick-action-btn" onclick="App.Router.switchSection('patient-prescriptions')">
+              <div class="icon"><i class="fa-solid fa-pills"></i></div>
+              <span>Prescriptions</span>
+            </button>
+            <button class="quick-action-btn" onclick="App.Router.switchSection('patient-lab-reports')">
+              <div class="icon"><i class="fa-solid fa-vial-circle-check"></i></div>
+              <span>Lab Reports</span>
+            </button>
+            <button class="quick-action-btn" onclick="App.Router.switchSection('patient-billing')">
+              <div class="icon"><i class="fa-solid fa-credit-card"></i></div>
+              <span>Pay Invoices</span>
+            </button>
+          </div>
+
+          <!-- Two Column Grid for Upcoming Appt & Recent Records -->
+          <div class="dashboard-grid mt-4">
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-calendar-day text-primary"></i> Next Upcoming Appointment</h3>
+                <button class="btn btn-ghost btn-sm" onclick="App.Router.switchSection('patient-appointments')">View
+                  All</button>
+              </div>
+              <div class="card-body" id="patient-next-appt-card">
+                <div class="empty-state" style="padding:2rem 1rem;">
+                  <div class="icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+                  <h3>No Upcoming Appointments</h3>
+                  <p>You do not have any pending appointments scheduled.</p>
+                  <button class="btn btn-primary btn-sm" onclick="App.Router.switchSection('patient-book')">Book
+                    Now</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-file-medical-waveform text-primary"></i> Recent Health Logs</h3>
+                <button class="btn btn-ghost btn-sm" onclick="App.Router.switchSection('patient-records')">View
+                  All</button>
+              </div>
+              <div class="card-body" id="patient-recent-records-list">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Appointment Booking Wizard -->
+        <section id="sec-patient-book" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Book a Medical Consultation</h1>
+              <p>Select your department, specialist physician, and preferred appointment time slot.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.Router.switchSection('patient-appointments')">
+                <i class="fa-solid fa-arrow-left"></i> My Appointments
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="max-width:860px; margin:0 auto;">
+            <div class="card-body">
+              <div class="booking-wizard">
+                <div class="wizard-steps">
+                  <div class="wizard-step active" id="wiz-step-1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Department</div>
+                  </div>
+                  <div class="wizard-step" id="wiz-step-2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Specialist Doctor</div>
+                  </div>
+                  <div class="wizard-step" id="wiz-step-3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Date & Slot</div>
+                  </div>
+                  <div class="wizard-step" id="wiz-step-4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Confirmation</div>
+                  </div>
+                </div>
+
+                <!-- Wizard Form -->
+                <form id="form-booking-wizard" onsubmit="App.PatientAppointments.submitBooking(event)">
+
+                  <!-- Step 1: Department Selection -->
+                  <div class="wizard-pane" id="wizard-pane-1">
+                    <h3 class="mb-2">Step 1: Choose Medical Department</h3>
+                    <p class="text-muted text-sm mb-4">Select the hospital discipline relevant to your symptoms.</p>
+                    <div class="form-group">
+                      <label>Department <span class="required">*</span></label>
+                      <select id="book-dept-select" class="form-control"
+                        onchange="App.PatientAppointments.handleDeptChange()" required>
+                        <option value="">-- Choose Department --</option>
+                      </select>
+                    </div>
+                    <div class="text-right mt-4">
+                      <button type="button" class="btn btn-primary" onclick="App.PatientAppointments.goToStep(2)">
+                        Next: Select Doctor <i class="fa-solid fa-arrow-right"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Step 2: Doctor Selection -->
+                  <div class="wizard-pane hidden" id="wizard-pane-2">
+                    <h3 class="mb-2">Step 2: Select Specialist Doctor</h3>
+                    <p class="text-muted text-sm mb-4">Choose an available consultant for your examination.</p>
+                    <div class="form-group">
+                      <label>Doctor <span class="required">*</span></label>
+                      <select id="book-doctor-select" class="form-control"
+                        onchange="App.PatientAppointments.handleDoctorChange()" required>
+                        <option value="">-- Select Specialist --</option>
+                      </select>
+                    </div>
+                    <div id="book-doctor-preview-card" class="card p-3 mb-3 hidden"
+                      style="background:var(--bg-tertiary);">
+                      <!-- Doctor info preview -->
+                    </div>
+                    <div class="flex justify-between mt-4">
+                      <button type="button" class="btn btn-secondary" onclick="App.PatientAppointments.goToStep(1)">
+                        <i class="fa-solid fa-arrow-left"></i> Previous
+                      </button>
+                      <button type="button" class="btn btn-primary" onclick="App.PatientAppointments.goToStep(3)">
+                        Next: Pick Date & Slot <i class="fa-solid fa-arrow-right"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Step 3: Date & Slot Selection -->
+                  <div class="wizard-pane hidden" id="wizard-pane-3">
+                    <h3 class="mb-2">Step 3: Select Consultation Date & Slot</h3>
+                    <p class="text-muted text-sm mb-4">Choose an available consultation day and exact 30-minute time
+                      slot.</p>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="book-date-input">Appointment Date <span class="required">*</span></label>
+                        <input type="date" id="book-date-input" class="form-control"
+                          onchange="App.PatientAppointments.loadDoctorSlots()" required>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>Available Time Slots <span class="required">*</span></label>
+                      <div id="book-slots-grid" class="time-slots">
+                        <p class="text-muted text-sm">Please select a consultation date to view available time slots.
+                        </p>
+                      </div>
+                      <input type="hidden" id="book-selected-time" required>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                      <button type="button" class="btn btn-secondary" onclick="App.PatientAppointments.goToStep(2)">
+                        <i class="fa-solid fa-arrow-left"></i> Previous
+                      </button>
+                      <button type="button" class="btn btn-primary" onclick="App.PatientAppointments.goToStep(4)">
+                        Next: Review & Confirm <i class="fa-solid fa-arrow-right"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Step 4: Reason & Confirmation -->
+                  <div class="wizard-pane hidden" id="wizard-pane-4">
+                    <h3 class="mb-2">Step 4: Reason for Visit & Final Confirmation</h3>
+                    <p class="text-muted text-sm mb-4">Review your appointment summary and provide details on your
+                      symptoms.</p>
+
+                    <div class="card p-3 mb-3" style="background:var(--bg-tertiary);" id="book-summary-box">
+                      <!-- Summary details injected here -->
+                    </div>
+
+                    <div class="form-group">
+                      <label for="book-reason-input">Reason for Consultation / Symptoms <span
+                          class="required">*</span></label>
+                      <textarea id="book-reason-input" class="form-control"
+                        placeholder="Describe symptoms or reasons (e.g. routine checkup, persistent cough, fever)..."
+                        rows="3" required></textarea>
+                    </div>
+
+                    <div class="flex justify-between mt-4">
+                      <button type="button" class="btn btn-secondary" onclick="App.PatientAppointments.goToStep(3)">
+                        <i class="fa-solid fa-arrow-left"></i> Previous
+                      </button>
+                      <button type="submit" id="btn-confirm-booking-submit" class="btn btn-success">
+                        <i class="fa-solid fa-check"></i> Confirm & Book Appointment
+                      </button>
+                    </div>
+                  </div>
+
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient My Appointments -->
+        <section id="sec-patient-appointments" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>My Appointments</h1>
+              <p>Review your scheduled consultations, status updates, or reschedule visits.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.Router.switchSection('patient-book')">
+                <i class="fa-solid fa-calendar-plus"></i> Book New Appointment
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="tabs" style="margin-bottom:0; border-bottom:none;">
+                <button class="tab-btn active" onclick="App.PatientAppointments.filterTab('all', this)">All
+                  Appointments</button>
+                <button class="tab-btn" onclick="App.PatientAppointments.filterTab('pending', this)">Pending</button>
+                <button class="tab-btn"
+                  onclick="App.PatientAppointments.filterTab('confirmed', this)">Confirmed</button>
+                <button class="tab-btn"
+                  onclick="App.PatientAppointments.filterTab('completed', this)">Completed</button>
+                <button class="tab-btn"
+                  onclick="App.PatientAppointments.filterTab('cancelled', this)">Cancelled</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Doctor / Specialist</th>
+                    <th>Department</th>
+                    <th>Date & Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-appointments-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Doctors Directory -->
+        <section id="sec-patient-doctors" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Find a Doctor / Specialist</h1>
+              <p>Browse qualified physicians across all hospital departments.</p>
+            </div>
+          </div>
+
+          <div class="table-toolbar mb-4"
+            style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+            <div class="table-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="patient-doc-search" placeholder="Search doctor by name or specialty..."
+                oninput="App.PatientDoctors.handleSearch()">
+            </div>
+            <div class="table-filters">
+              <select id="patient-doc-dept-filter" onchange="App.PatientDoctors.handleSearch()">
+                <option value="">All Departments</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="doctors-grid" id="patient-doctors-grid">
+            <div class="spinner"></div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Medical Records -->
+        <section id="sec-patient-records" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Electronic Medical Records</h1>
+              <p>Your official diagnosis, treatment plans, symptoms, and physician notes.</p>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Attending Doctor</th>
+                    <th>Diagnosis</th>
+                    <th>Symptoms</th>
+                    <th>Prescribed Treatment</th>
+                    <th>Follow-up Date</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-records-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Prescriptions -->
+        <section id="sec-patient-prescriptions" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>My Prescriptions</h1>
+              <p>Prescribed medications, dosage instructions, and printable prescription forms.</p>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Prescription Date</th>
+                    <th>Doctor</th>
+                    <th>Medications</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-prescriptions-table-body">
+                  <tr>
+                    <td colspan="5" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Lab Reports -->
+        <section id="sec-patient-lab-reports" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Laboratory & Diagnostic Reports</h1>
+              <p>Access your pathology, imaging, blood, and diagnostic test results online.</p>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Test Name</th>
+                    <th>Test Date</th>
+                    <th>Doctor</th>
+                    <th>Result Summary</th>
+                    <th>Reference Range</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-lab-reports-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Billing & Invoices -->
+        <section id="sec-patient-billing" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Billing & Payment Records</h1>
+              <p>Review consultation fees, pharmacy, diagnostic lab bills, and print invoices.</p>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice Date</th>
+                    <th>Total Amount</th>
+                    <th>Paid Amount</th>
+                    <th>Remaining Balance</th>
+                    <th>Payment Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-billing-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Profile -->
+        <section id="sec-patient-profile" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Profile & Account Settings</h1>
+              <p>Update personal medical information, contact details, and password.</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Personal Info Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Personal & Medical Info</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-patient-profile-update" onsubmit="App.PatientProfile.saveProfile(event)">
+                  <div class="form-group">
+                    <label>Full Name <span class="required">*</span></label>
+                    <input type="text" id="prof-name" class="form-control" required>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Email Address</label>
+                      <input type="email" id="prof-email" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                      <label>Phone Number</label>
+                      <input type="tel" id="prof-phone" class="form-control">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Date of Birth</label>
+                      <input type="date" id="prof-dob" class="form-control">
+                    </div>
+                    <div class="form-group">
+                      <label>Gender</label>
+                      <select id="prof-gender" class="form-control">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Blood Group</label>
+                      <select id="prof-blood" class="form-control">
+                        <option value="">Select Blood Type</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Address</label>
+                      <input type="text" id="prof-address" class="form-control">
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Profile Details
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Password Update Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Change Security Password</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-patient-pass-update" onsubmit="App.PatientProfile.changePassword(event)">
+                  <div class="form-group">
+                    <label>New Password <span class="required">*</span></label>
+                    <div class="password-wrapper">
+                      <input type="password" id="prof-new-pass" class="form-control" placeholder="Min 6 characters"
+                        minlength="6" required>
+                      <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Confirm New Password <span class="required">*</span></label>
+                    <div class="password-wrapper">
+                      <input type="password" id="prof-new-pass-confirm" class="form-control"
+                        placeholder="Repeat new password" minlength="6" required>
+                      <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-secondary">
+                    <i class="fa-solid fa-key"></i> Update Password
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Patient Notifications Inbox -->
+        <section id="sec-patient-notifications" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Notifications & Alerts</h1>
+              <p>System updates regarding appointment confirmations, lab reports, and billing.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.Notifications.markAllAsRead()">
+                <i class="fa-solid fa-check-double"></i> Mark All as Read
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="notification-list" id="patient-full-notif-list">
+              <div class="p-4 text-center text-muted">No notifications found</div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= ADMIN SECTIONS ================= -->
+
+        <!-- Section: Admin Overview & Analytics -->
+        <section id="sec-admin-dashboard" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Hospital Executive Analytics</h1>
+              <p>Live operational statistics, appointment trends, bed occupancy, and revenue.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.AdminDashboard.refreshStats()">
+                <i class="fa-solid fa-arrows-rotate"></i> Refresh Analytics
+              </button>
+              <button class="btn btn-primary" onclick="App.Router.switchSection('admin-emergency')">
+                <i class="fa-solid fa-truck-medical"></i> Emergency Intake
+              </button>
+            </div>
+          </div>
+
+          <!-- Alert box for low stock if any -->
+          <div id="admin-alerts-banner" class="hidden mb-3"></div>
+
+          <!-- Admin KPI Metric Cards -->
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-info">
+                <h4>Registered Patients</h4>
+                <div class="value" id="adm-stat-patients">0</div>
+                <div class="change positive"><i class="fa-solid fa-users"></i> Patient Base</div>
+              </div>
+              <div class="stat-icon blue"><i class="fa-solid fa-hospital-user"></i></div>
+            </div>
+            <div class="stat-card cyan">
+              <div class="stat-info">
+                <h4>Active Doctors</h4>
+                <div class="value" id="adm-stat-doctors">0</div>
+                <div class="change positive"><i class="fa-solid fa-user-doctor"></i> Medical staff</div>
+              </div>
+              <div class="stat-icon cyan"><i class="fa-solid fa-stethoscope"></i></div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-info">
+                <h4>Today's Appointments</h4>
+                <div class="value" id="adm-stat-today-appts">0</div>
+                <div class="change" id="adm-stat-pending-appts-badge">0 Pending Approval</div>
+              </div>
+              <div class="stat-icon orange"><i class="fa-solid fa-calendar-day"></i></div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-info">
+                <h4>Active Emergencies</h4>
+                <div class="value" id="adm-stat-emergencies">0</div>
+                <div class="change negative"><i class="fa-solid fa-bell"></i> Critical Triage</div>
+              </div>
+              <div class="stat-icon red"><i class="fa-solid fa-truck-medical"></i></div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-info">
+                <h4>Available Beds</h4>
+                <div class="value" id="adm-stat-beds">0</div>
+                <div class="change" id="adm-stat-beds-occupied-badge">0 Occupied</div>
+              </div>
+              <div class="stat-icon green"><i class="fa-solid fa-bed"></i></div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-info">
+                <h4>Today's Revenue</h4>
+                <div class="value" id="adm-stat-revenue">₹0.00</div>
+                <div class="change" id="adm-stat-pending-revenue">₹0 Pending</div>
+              </div>
+              <div class="stat-icon purple"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            </div>
+          </div>
+
+          <!-- Interactive Analytics Charts Grid -->
+          <div class="charts-grid mt-4">
+            <div class="chart-card">
+              <h4><i class="fa-solid fa-chart-line text-primary"></i> 7-Day Appointment Trends</h4>
+              <div class="chart-container">
+                <canvas id="chart-appointments-trend"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h4><i class="fa-solid fa-chart-pie text-primary"></i> Appointment Status Breakdown</h4>
+              <div class="chart-container">
+                <canvas id="chart-appointment-status"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h4><i class="fa-solid fa-hospital text-primary"></i> Department Patient Consultations</h4>
+              <div class="chart-container">
+                <canvas id="chart-department-performance"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h4><i class="fa-solid fa-bed-pulse text-primary"></i> Bed & Room Occupancy</h4>
+              <div class="chart-container">
+                <canvas id="chart-room-occupancy"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Doctor Management -->
+        <section id="sec-admin-doctors" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Doctor & Specialist Management</h1>
+              <p>Add new doctors, manage consultation fees, schedules, and active statuses.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.AdminExport.exportCSV('doctors')">
+                <i class="fa-solid fa-file-export"></i> Export CSV
+              </button>
+              <button class="btn btn-primary" onclick="App.AdminDoctors.openAddModal()">
+                <i class="fa-solid fa-user-plus"></i> Add New Doctor
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="adm-doc-search" placeholder="Search doctor by name or specialty..."
+                  oninput="App.AdminDoctors.loadDoctors()">
+              </div>
+              <div class="table-filters">
+                <select id="adm-doc-dept-filter" onchange="App.AdminDoctors.loadDoctors()">
+                  <option value="">All Departments</option>
+                </select>
+                <select id="adm-doc-status-filter" onchange="App.AdminDoctors.loadDoctors()">
+                  <option value="">All Statuses</option>
+                  <option value="active" selected>Active Only</option>
+                  <option value="inactive">Inactive Only</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Doctor Name</th>
+                    <th>Department</th>
+                    <th>Specialization</th>
+                    <th>Experience</th>
+                    <th>Fee</th>
+                    <th>Available Days</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-doctors-table-body">
+                  <tr>
+                    <td colspan="8" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Accounts Management -->
+        <section id="sec-admin-admins" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Admin Management</h1>
+              <p>Manage system administrators, provision new executive accounts, and control system privileges.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.AdminAdmins.openAddModal()">
+                <i class="fa-solid fa-user-plus"></i> + Add Admin
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="adm-admin-search" placeholder="Search admin by name or email..."
+                  oninput="App.AdminAdmins.loadAdmins()">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Administrator</th>
+                    <th>Email Address</th>
+                    <th>Role</th>
+                    <th>Account Status</th>
+                    <th>Registered Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-admins-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Patient Management -->
+        <section id="sec-admin-patients" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Patient Users</h1>
+              <p>View registered patients, contact profiles, account statuses, and medical records.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.AdminExport.exportCSV('patients')">
+                <i class="fa-solid fa-file-export"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="adm-patient-search" placeholder="Search by patient name, email, phone..."
+                  oninput="App.AdminPatients.loadPatients()">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Patient Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Gender</th>
+                    <th>Account Status</th>
+                    <th>Registered Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-patients-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Department Management -->
+        <section id="sec-admin-departments" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Hospital Departments</h1>
+              <p>Configure medical departments and specialty clinical divisions.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.AdminDepartments.openAddModal()">
+                <i class="fa-solid fa-plus"></i> Add Department
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Department Name</th>
+                    <th>Description</th>
+                    <th>Doctors Count</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-departments-table-body">
+                  <tr>
+                    <td colspan="5" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Appointments Master -->
+        <section id="sec-admin-appointments" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Appointments Master Queue</h1>
+              <p>Approve pending bookings, assign doctor consults, reschedule, or complete visits.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.AdminExport.exportCSV('appointments')">
+                <i class="fa-solid fa-file-export"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-filters">
+                <select id="adm-appt-status-filter" onchange="App.AdminAppointments.loadAppointments()">
+                  <option value="">All Statuses</option>
+                  <option value="pending">Pending Only</option>
+                  <option value="confirmed">Confirmed Only</option>
+                  <option value="completed">Completed Only</option>
+                  <option value="cancelled">Cancelled Only</option>
+                  <option value="rejected">Rejected Only</option>
+                </select>
+                <input type="date" id="adm-appt-date-filter" class="form-control" style="width:auto;"
+                  onchange="App.AdminAppointments.loadAppointments()">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Patient Name</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Date & Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-appointments-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Medical Records -->
+        <section id="sec-admin-medical-records" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Medical Records Management</h1>
+              <p>Create electronic clinical notes, diagnosis records, and patient treatment plans.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.AdminMedicalRecords.openAddModal()">
+                <i class="fa-solid fa-notes-medical"></i> Add Clinical Record
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="adm-record-search" placeholder="Search by diagnosis or symptom..."
+                  oninput="App.AdminMedicalRecords.loadRecords()">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Diagnosis</th>
+                    <th>Treatment</th>
+                    <th>Follow-up</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-records-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Prescriptions -->
+        <section id="sec-admin-prescriptions" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Prescriptions Management</h1>
+              <p>Issue new pharmaceutical prescriptions with dosage, frequency, and instructions.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.AdminPrescriptions.openAddModal()">
+                <i class="fa-solid fa-prescription-bottle-medical"></i> Issue Prescription
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Medications</th>
+                    <th>Instructions / Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-prescriptions-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Diagnostic Lab Reports -->
+        <section id="sec-admin-lab-reports" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Diagnostic Laboratory & Pathology</h1>
+              <p>Add lab tests, record test findings, upload reports, and notify patients.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.AdminLabReports.openAddModal()">
+                <i class="fa-solid fa-flask-vial"></i> Add Lab Report
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Test Name</th>
+                    <th>Date</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Result Findings</th>
+                    <th>Reference Range</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-lab-reports-table-body">
+                  <tr>
+                    <td colspan="8" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Pharmacy & Medicines -->
+        <section id="sec-admin-medicines" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Pharmacy & Medicine Inventory</h1>
+              <p>Track medicine stock levels, batch numbers, expiration dates, and pricing.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.AdminExport.exportCSV('medicines')">
+                <i class="fa-solid fa-file-export"></i> Export CSV
+              </button>
+              <button class="btn btn-primary" onclick="App.AdminMedicines.openAddModal()">
+                <i class="fa-solid fa-pills"></i> Add Medicine
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="adm-med-search" placeholder="Search medicine name, manufacturer..."
+                  oninput="App.AdminMedicines.loadMedicines()">
+              </div>
+              <div class="table-filters">
+                <select id="adm-med-stock-filter" onchange="App.AdminMedicines.loadMedicines()">
+                  <option value="">All Stock Status</option>
+                  <option value="in_stock">In Stock</option>
+                  <option value="low_stock">Low Stock Warnings</option>
+                  <option value="out_of_stock">Out of Stock</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Medicine Name</th>
+                    <th>Category</th>
+                    <th>Manufacturer</th>
+                    <th>Quantity</th>
+                    <th>Batch #</th>
+                    <th>Expiry Date</th>
+                    <th>Unit Price</th>
+                    <th>Stock Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-medicines-table-body">
+                  <tr>
+                    <td colspan="9" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Rooms & Beds -->
+        <section id="sec-admin-rooms" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Hospital Rooms & Bed Occupancy</h1>
+              <p>Manage inpatient wards, ICU suites, semi-private rooms, and bed allocations.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.AdminRooms.openAddModal()">
+                <i class="fa-solid fa-bed"></i> Add Room
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-filters">
+                <select id="adm-room-type-filter" onchange="App.AdminRooms.loadRooms()">
+                  <option value="">All Room Types</option>
+                  <option value="General">General Ward</option>
+                  <option value="Semi-Private">Semi-Private</option>
+                  <option value="Private">Private Suite</option>
+                  <option value="ICU">Intensive Care Unit (ICU)</option>
+                  <option value="Emergency">Emergency Room (ER)</option>
+                </select>
+                <select id="adm-room-status-filter" onchange="App.AdminRooms.loadRooms()">
+                  <option value="">All Room Status</option>
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Room Number</th>
+                    <th>Room Type</th>
+                    <th>Floor</th>
+                    <th>Status</th>
+                    <th>Bed Allocations</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-rooms-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Emergency Cases -->
+        <section id="sec-admin-emergency" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Emergency Department Triage</h1>
+              <p>Log incoming emergency patients, prioritize triage levels, and assign doctors/ER beds.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-danger" onclick="App.AdminEmergency.openAddModal()">
+                <i class="fa-solid fa-truck-medical"></i> Register Emergency Case
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-filters">
+                <select id="adm-emg-priority-filter" onchange="App.AdminEmergency.loadEmergencies()">
+                  <option value="">All Priorities</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+                <select id="adm-emg-status-filter" onchange="App.AdminEmergency.loadEmergencies()">
+                  <option value="">All Statuses</option>
+                  <option value="active" selected>Active In-ER</option>
+                  <option value="stabilized">Stabilized</option>
+                  <option value="admitted">Admitted to Ward</option>
+                  <option value="discharged">Discharged</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Arrival Time</th>
+                    <th>Patient Name</th>
+                    <th>Contact</th>
+                    <th>Emergency Type</th>
+                    <th>Priority</th>
+                    <th>Assigned Doctor</th>
+                    <th>Assigned Room</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-emergency-table-body">
+                  <tr>
+                    <td colspan="9" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Billing & Revenue -->
+        <section id="sec-admin-billing" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Hospital Billing & Revenue</h1>
+              <p>Generate patient invoices, collect payments, and track outstanding hospital balances.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-secondary" onclick="App.AdminExport.exportCSV('billing')">
+                <i class="fa-solid fa-file-export"></i> Export CSV
+              </button>
+              <button class="btn btn-primary" onclick="App.AdminBilling.openAddModal()">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Generate Invoice
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-toolbar">
+              <div class="table-filters">
+                <select id="adm-bill-status-filter" onchange="App.AdminBilling.loadBilling()">
+                  <option value="">All Payment Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="partially_paid">Partially Paid</option>
+                  <option value="paid">Paid in Full</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice Date</th>
+                    <th>Patient</th>
+                    <th>Consultation</th>
+                    <th>Lab Charges</th>
+                    <th>Medicine</th>
+                    <th>Room</th>
+                    <th>Total Amount</th>
+                    <th>Paid</th>
+                    <th>Remaining</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-billing-table-body">
+                  <tr>
+                    <td colspan="11" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Notification Dispatcher -->
+        <section id="sec-admin-notifications" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Notification Dispatcher</h1>
+              <p>Send direct alerts, appointment notices, and system broadcast announcements.</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-primary" onclick="App.AdminNotifications.openSendModal()">
+                <i class="fa-solid fa-bullhorn"></i> Send Alert
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Sent Time</th>
+                    <th>Recipient</th>
+                    <th>Title</th>
+                    <th>Message</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-notifications-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Activity Audit Logs -->
+        <section id="sec-admin-activity-logs" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>System Activity & Audit Logs</h1>
+              <p>Immutable log of user logins, medical record creations, deletions, and billing actions.</p>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Entity Type</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-logs-table-body">
+                  <tr>
+                    <td colspan="5" class="text-center p-4">
+                      <div class="spinner"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Admin Hospital Settings -->
+        <section id="sec-admin-settings" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Hospital System Settings</h1>
+              <p>Configure hospital details, emergency contact numbers, and appointment slot rules.</p>
+            </div>
+          </div>
+
+          <div class="card" style="max-width:720px;">
+            <div class="card-body">
+              <form id="form-admin-settings" onsubmit="App.AdminSettings.saveSettings(event)">
+                <div class="form-group">
+                  <label>Hospital Display Name</label>
+                  <input type="text" id="set-hospital-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Tagline / Motto</label>
+                  <input type="text" id="set-hospital-tagline" class="form-control">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>General Phone</label>
+                    <input type="text" id="set-hospital-phone" class="form-control">
+                  </div>
+                  <div class="form-group">
+                    <label>Emergency Hotline</label>
+                    <input type="text" id="set-emergency-phone" class="form-control">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Hospital Email</label>
+                  <input type="email" id="set-hospital-email" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label>Physical Address</label>
+                  <input type="text" id="set-hospital-address" class="form-control">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Slot Duration (Minutes)</label>
+                    <input type="number" id="set-slot-duration" class="form-control" value="30">
+                  </div>
+                  <div class="form-group">
+                    <label>Max Patients Per Slot</label>
+                    <input type="number" id="set-max-slot" class="form-control" value="1">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">
+                  <i class="fa-solid fa-floppy-disk"></i> Save System Configuration
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS FOR ADMIN CRUD OPERATIONS                                          -->
+  <!-- ========================================================================= -->
+
+  <!-- Modal: Admin Add -->
+  <div id="modal-admin-form" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-shield text-primary"></i> Add New Administrator</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-admin-form')">&times;</button>
+      </div>
+      <form id="form-admin-create" onsubmit="App.AdminAdmins.saveNewAdmin(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Administrator Full Name <span class="required">*</span></label>
+            <input type="text" id="admin-form-name" class="form-control" placeholder="e.g. Dr. Rajesh Sharma" required>
+          </div>
+          <div class="form-group">
+            <label>Official Email Address <span class="required">*</span></label>
+            <input type="email" id="admin-form-email" class="form-control" placeholder="admin.rajesh@medicare.com"
+              required>
+          </div>
+          <div class="form-group">
+            <label>Password <span class="required">*</span></label>
+            <div class="password-wrapper">
+              <input type="password" id="admin-form-pass" class="form-control" placeholder="Minimum 6 characters"
+                minlength="6" required>
+              <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Confirm Password <span class="required">*</span></label>
+            <div class="password-wrapper">
+              <input type="password" id="admin-form-confirm-pass" class="form-control" placeholder="Re-enter password"
+                minlength="6" required>
+              <button type="button" class="btn-toggle-password" title="Click to show password" aria-label="Show password">🙈</button>
+            </div>
+          </div>
+          <div
+            style="font-size:0.82rem; padding:0.75rem; border-radius:var(--radius-md); background:rgba(0,119,182,0.08); border-left:3px solid var(--primary); color:var(--text-secondary); margin-top:0.5rem;">
+            <i class="fa-solid fa-shield-halved text-primary"></i> This user will be granted full administrative
+            authority to oversee hospital doctors, patients, clinical data, and billing.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-admin-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-admin-submit"><i
+              class="fa-solid fa-user-check"></i> Create Administrator</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Doctor Add / Edit -->
+  <div id="modal-doctor-form" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-doctor-title"><i class="fa-solid fa-user-doctor text-primary"></i> Add New Doctor</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-doctor-form')">&times;</button>
+      </div>
+      <form id="form-doctor-crud" onsubmit="App.AdminDoctors.saveDoctor(event)">
+        <div class="modal-body">
+          <input type="hidden" id="doc-form-id">
+          <input type="hidden" id="doc-form-avatar-url" value="">
+
+          <!-- Doctor Photo Upload Component -->
+          <div class="photo-uploader-box">
+            <div class="photo-uploader-preview" id="doc-photo-preview">
+              <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <div style="flex:1;">
+              <label style="font-weight:600; font-size:0.9rem; margin-bottom:0.25rem; display:block;">Doctor Profile
+                Photo</label>
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+                <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo File
+                  <input type="file" id="doc-form-photo-file" accept="image/*" style="display:none;"
+                    onchange="App.AdminDoctors.handlePhotoSelect(event)">
+                </label>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-doc-remove-photo"
+                  style="display:none;" onclick="App.AdminDoctors.removePhoto()">
+                  <i class="fa-solid fa-trash"></i> Remove
+                </button>
+              </div>
+              <div style="margin-top:0.4rem;">
+                <input type="url" id="doc-form-photo-url-input" class="form-control"
+                  style="font-size:0.82rem; padding:0.4rem 0.65rem;" placeholder="Or paste image URL (e.g. https://...)"
+                  oninput="App.AdminDoctors.handlePhotoUrlInput(this.value)">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Doctor Full Name <span class="required">*</span></label>
+              <input type="text" id="doc-form-name" class="form-control" placeholder="Dr. Sarah Johnson" required>
+            </div>
+            <div class="form-group">
+              <label>Department <span class="required">*</span></label>
+              <select id="doc-form-dept" class="form-control" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Specialization <span class="required">*</span></label>
+              <input type="text" id="doc-form-spec" class="form-control" placeholder="Cardiothoracic Surgery" required>
+            </div>
+            <div class="form-group">
+              <label>Qualification</label>
+              <input type="text" id="doc-form-qual" class="form-control" placeholder="MD, DM Cardiology">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="doc-form-email" class="form-control" placeholder="doctor@medicare.com">
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="doc-form-phone" class="form-control" placeholder="+91 98765 43210">
+            </div>
+          </div>
+          <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+            <div class="form-group">
+              <label>Experience (Years)</label>
+              <input type="number" id="doc-form-exp" class="form-control" value="5" min="0">
+            </div>
+            <div class="form-group">
+              <label>Consultation Fee (₹)</label>
+              <input type="number" id="doc-form-fee" class="form-control" value="500" step="50" min="0">
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="doc-form-gender" class="form-control">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Daily Start Time</label>
+              <input type="time" id="doc-form-start" class="form-control" value="09:00">
+            </div>
+            <div class="form-group">
+              <label>Daily End Time</label>
+              <input type="time" id="doc-form-end" class="form-control" value="17:00">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Available Days</label>
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.25rem;">
+              <label class="checkbox-group"><input type="checkbox" name="doc_days" value="Monday" checked>
+                Monday</label>
+              <label class="checkbox-group"><input type="checkbox" name="doc_days" value="Tuesday" checked>
+                Tuesday</label>
+              <label class="checkbox-group"><input type="checkbox" name="doc_days" value="Wednesday" checked>
+                Wednesday</label>
+              <label class="checkbox-group"><input type="checkbox" name="doc_days" value="Thursday" checked>
+                Thursday</label>
+              <label class="checkbox-group"><input type="checkbox" name="doc_days" value="Friday" checked>
+                Friday</label>
+              <label class="checkbox-group"><input type="checkbox" name="doc_days" value="Saturday"> Saturday</label>
+              <label class="checkbox-group"><input type="checkbox" name="doc_days" value="Sunday"> Sunday</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="doc-form-status" class="form-control">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="on_leave">On Leave</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-doctor-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Doctor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Department Add / Edit -->
+  <div id="modal-department-form" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-dept-title">Add Department</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-department-form')">&times;</button>
+      </div>
+      <form id="form-dept-crud" onsubmit="App.AdminDepartments.saveDepartment(event)">
+        <div class="modal-body">
+          <input type="hidden" id="dept-form-id">
+          <div class="form-group">
+            <label>Department Name <span class="required">*</span></label>
+            <input type="text" id="dept-form-name" class="form-control" placeholder="e.g. Ophthalmology" required>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="dept-form-desc" class="form-control" rows="3" placeholder="Department overview..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="dept-form-status" class="form-control">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-department-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Department</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Medical Record Add / Edit -->
+  <div id="modal-record-form" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-record-title">Add Medical Record</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-record-form')">&times;</button>
+      </div>
+      <form id="form-record-crud" onsubmit="App.AdminMedicalRecords.saveRecord(event)">
+        <div class="modal-body">
+          <input type="hidden" id="rec-form-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Patient <span class="required">*</span></label>
+              <select id="rec-form-patient" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Attending Doctor <span class="required">*</span></label>
+              <select id="rec-form-doctor" class="form-control" required></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Diagnosis <span class="required">*</span></label>
+            <input type="text" id="rec-form-diagnosis" class="form-control" placeholder="e.g. Acute Bronchitis"
+              required>
+          </div>
+          <div class="form-group">
+            <label>Symptoms</label>
+            <textarea id="rec-form-symptoms" class="form-control"
+              placeholder="Fever, persistent dry cough for 5 days..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Treatment Plan</label>
+            <textarea id="rec-form-treatment" class="form-control"
+              placeholder="Antibiotics course, nebulization, rest..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Record Date</label>
+              <input type="date" id="rec-form-date" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Follow-up Date</label>
+              <input type="date" id="rec-form-followup" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-record-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Clinical Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Prescription Add with Multi-Medicine Items -->
+  <div id="modal-prescription-form" class="modal-overlay">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <h3>Issue New Prescription</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-prescription-form')">&times;</button>
+      </div>
+      <form id="form-presc-crud" onsubmit="App.AdminPrescriptions.savePrescription(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Patient <span class="required">*</span></label>
+              <select id="presc-form-patient" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Doctor <span class="required">*</span></label>
+              <select id="presc-form-doctor" class="form-control" required></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>General Notes / Advice</label>
+            <input type="text" id="presc-form-notes" class="form-control"
+              placeholder="Drink plenty of fluids, take after meals...">
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin: 1.5rem 0 0.5rem;">
+            <h4>Prescription Medicines</h4>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="App.AdminPrescriptions.addMedicineRow()">
+              <i class="fa-solid fa-plus"></i> Add Medicine Line
+            </button>
+          </div>
+
+          <div id="presc-items-container">
+            <!-- Dynamic medicine item rows -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-prescription-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Issue
+            Prescription</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Lab Report Add / Edit -->
+  <div id="modal-lab-form" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-lab-title">Add Lab Diagnostic Report</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-lab-form')">&times;</button>
+      </div>
+      <form id="form-lab-crud" onsubmit="App.AdminLabReports.saveLabReport(event)">
+        <div class="modal-body">
+          <input type="hidden" id="lab-form-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Patient <span class="required">*</span></label>
+              <select id="lab-form-patient" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Requesting Doctor</label>
+              <select id="lab-form-doctor" class="form-control"></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Diagnostic Test Name <span class="required">*</span></label>
+            <input type="text" id="lab-form-test" class="form-control"
+              placeholder="e.g. Complete Blood Count (CBC) / Lipid Profile" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Result / Finding Summary <span class="required">*</span></label>
+              <input type="text" id="lab-form-result" class="form-control"
+                placeholder="e.g. Hemoglobin 14.2 g/dL - Normal" required>
+            </div>
+            <div class="form-group">
+              <label>Reference Normal Range</label>
+              <input type="text" id="lab-form-range" class="form-control" placeholder="13.5 - 17.5 g/dL">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Test Date</label>
+              <input type="date" id="lab-form-date" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="lab-form-status" class="form-control">
+                <option value="completed">Completed</option>
+                <option value="pending">Pending Analysis</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.UI.closeModal('modal-lab-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Lab Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Medicine Stock Add / Edit -->
+  <div id="modal-medicine-form" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-med-title">Add Pharmacy Medicine</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-medicine-form')">&times;</button>
+      </div>
+      <form id="form-med-crud" onsubmit="App.AdminMedicines.saveMedicine(event)">
+        <div class="modal-body">
+          <input type="hidden" id="med-form-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Medicine Name <span class="required">*</span></label>
+              <input type="text" id="med-form-name" class="form-control" placeholder="e.g. Paracetamol 500mg" required>
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <input type="text" id="med-form-cat" class="form-control" placeholder="Analgesic / Antibiotic / Antacid">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Manufacturer</label>
+              <input type="text" id="med-form-mfg" class="form-control" placeholder="PharmaCorp Ltd">
+            </div>
+            <div class="form-group">
+              <label>Supplier</label>
+              <input type="text" id="med-form-supplier" class="form-control" placeholder="MedSupply Inc">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Stock Quantity <span class="required">*</span></label>
+              <input type="number" id="med-form-qty" class="form-control" value="100" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Unit Price (₹) <span class="required">*</span></label>
+              <input type="number" id="med-form-price" class="form-control" value="5.00" step="0.5" min="0" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Batch Number</label>
+              <input type="text" id="med-form-batch" class="form-control" placeholder="BT-2026-099">
+            </div>
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="date" id="med-form-expiry" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Stock Status</label>
+            <select id="med-form-status" class="form-control">
+              <option value="in_stock">In Stock</option>
+              <option value="low_stock">Low Stock Warning</option>
+              <option value="out_of_stock">Out of Stock</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-medicine-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Medicine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Room Add -->
+  <div id="modal-room-form" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Hospital Room</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-room-form')">&times;</button>
+      </div>
+      <form id="form-room-crud" onsubmit="App.AdminRooms.saveRoom(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Room Number <span class="required">*</span></label>
+            <input type="text" id="room-form-num" class="form-control" placeholder="e.g. ICU-405 or P-305" required>
+          </div>
+          <div class="form-group">
+            <label>Room Type <span class="required">*</span></label>
+            <select id="room-form-type" class="form-control" required>
+              <option value="General">General Ward</option>
+              <option value="Semi-Private">Semi-Private</option>
+              <option value="Private">Private Suite</option>
+              <option value="ICU">Intensive Care Unit (ICU)</option>
+              <option value="Emergency">Emergency Room (ER)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Floor Number</label>
+            <input type="number" id="room-form-floor" class="form-control" value="1" min="1">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.UI.closeModal('modal-room-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Room & Beds</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Emergency Case Intake -->
+  <div id="modal-emergency-form" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-truck-medical text-danger"></i> Emergency Intake & Triage</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-emergency-form')">&times;</button>
+      </div>
+      <form id="form-emergency-crud" onsubmit="App.AdminEmergency.saveEmergency(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Patient Full Name <span class="required">*</span></label>
+              <input type="text" id="emg-form-name" class="form-control" placeholder="Patient name..." required>
+            </div>
+            <div class="form-group">
+              <label>Emergency Contact Phone</label>
+              <input type="tel" id="emg-form-phone" class="form-control" placeholder="+1 (555) 000-0000">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Emergency Trauma / Type <span class="required">*</span></label>
+              <input type="text" id="emg-form-type" class="form-control"
+                placeholder="e.g. Acute Cardiac Arrest, Road Accident Trauma..." required>
+            </div>
+            <div class="form-group">
+              <label>Triage Priority Level <span class="required">*</span></label>
+              <select id="emg-form-priority" class="form-control" required>
+                <option value="critical">Critical (Code Red - Immediate)</option>
+                <option value="high">High (Priority 1)</option>
+                <option value="medium" selected>Medium (Urgent)</option>
+                <option value="low">Low (Non-Urgent)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Assigned Emergency Doctor</label>
+              <select id="emg-form-doc" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>Assigned ER Room / Bed</label>
+              <select id="emg-form-room" class="form-control"></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Emergency Triage Notes</label>
+            <textarea id="emg-form-notes" class="form-control"
+              placeholder="Vitals on arrival: BP 140/90, Pulse 110..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-emergency-form')">Cancel</button>
+          <button type="submit" class="btn btn-danger"><i class="fa-solid fa-check"></i> Register Emergency
+            Case</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Generate Billing Invoice -->
+  <div id="modal-billing-form" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>Generate Hospital Invoice</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-billing-form')">&times;</button>
+      </div>
+      <form id="form-billing-crud" onsubmit="App.AdminBilling.saveBill(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Patient <span class="required">*</span></label>
+            <select id="bill-form-patient" class="form-control" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Consultation Fee (₹)</label>
+              <input type="number" id="bill-form-consult" class="form-control" value="500.00" step="10" min="0"
+                oninput="App.AdminBilling.calcTotal()">
+            </div>
+            <div class="form-group">
+              <label>Diagnostic Lab Charges (₹)</label>
+              <input type="number" id="bill-form-lab" class="form-control" value="0.00" step="10" min="0"
+                oninput="App.AdminBilling.calcTotal()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pharmacy Medicines (₹)</label>
+              <input type="number" id="bill-form-meds" class="form-control" value="0.00" step="10" min="0"
+                oninput="App.AdminBilling.calcTotal()">
+            </div>
+            <div class="form-group">
+              <label>Room / Bed Stay Charges (₹)</label>
+              <input type="number" id="bill-form-room" class="form-control" value="0.00" step="10" min="0"
+                oninput="App.AdminBilling.calcTotal()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Other Hospital Charges (₹)</label>
+              <input type="number" id="bill-form-other" class="form-control" value="0.00" step="10" min="0"
+                oninput="App.AdminBilling.calcTotal()">
+            </div>
+            <div class="form-group">
+              <label>Amount Already Paid (₹)</label>
+              <input type="number" id="bill-form-paid" class="form-control" value="0.00" step="10" min="0"
+                oninput="App.AdminBilling.calcTotal()">
+            </div>
+          </div>
+          <div class="card p-3" style="background:var(--bg-tertiary);">
+            <div class="flex justify-between font-bold" style="font-size:1.1rem;">
+              <span>Total Invoice Amount:</span>
+              <span id="bill-calc-total" class="text-primary">₹500.00</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-billing-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-receipt"></i> Create Invoice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Record Payment on Bill -->
+  <div id="modal-payment-form" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Record Payment</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-payment-form')">&times;</button>
+      </div>
+      <form id="form-payment-crud" onsubmit="App.AdminBilling.savePayment(event)">
+        <div class="modal-body">
+          <input type="hidden" id="pay-form-bill-id">
+          <input type="hidden" id="pay-form-patient-id">
+          <div class="form-group">
+            <label>Payment Amount (₹) <span class="required">*</span></label>
+            <input type="number" id="pay-form-amount" class="form-control" step="1" min="1" required>
+          </div>
+          <div class="form-group">
+            <label>Payment Method <span class="required">*</span></label>
+            <select id="pay-form-method" class="form-control" required>
+              <option value="cash">Cash</option>
+              <option value="card">Credit / Debit Card</option>
+              <option value="upi">UPI / Digital Wallet</option>
+              <option value="insurance">Health Insurance Claim</option>
+              <option value="bank_transfer">Bank Wire Transfer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Transaction Reference / Receipt #</label>
+            <input type="text" id="pay-form-ref" class="form-control" placeholder="TXN-2026-XXXX">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-payment-form')">Cancel</button>
+          <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Record Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Broadcast Notification -->
+  <div id="modal-notification-form" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Send Notification</h3>
+        <button class="modal-close" onclick="App.UI.closeModal('modal-notification-form')">&times;</button>
+      </div>
+      <form id="form-notif-crud" onsubmit="App.AdminNotifications.sendNotification(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Recipient Patient <span class="required">*</span></label>
+            <select id="notif-form-patient" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label>Notification Title <span class="required">*</span></label>
+            <input type="text" id="notif-form-title" class="form-control" placeholder="e.g. Appointment Reminder"
+              required>
+          </div>
+          <div class="form-group">
+            <label>Message Content <span class="required">*</span></label>
+            <textarea id="notif-form-msg" class="form-control" rows="3" placeholder="Notification message text..."
+              required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Alert Type</label>
+            <select id="notif-form-type" class="form-control">
+              <option value="info">Information</option>
+              <option value="appointment">Appointment</option>
+              <option value="prescription">Prescription</option>
+              <option value="billing">Billing</option>
+              <option value="lab_report">Lab Report</option>
+              <option value="warning">Warning</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+            onclick="App.UI.closeModal('modal-notification-form')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Alert</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="script.js"></script>
+</body>
+
+</html>
